@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { LinkButton } from "@/components/Button";
 import { StatCard } from "@/components/StatCard";
 import { TipCard } from "@/components/TipCard";
@@ -9,7 +10,18 @@ import { DAILY_TIPS } from "@/lib/mockData";
 
 export default function HomePage() {
   const { stats, isDemo } = useImpact();
-  const tipIndex = new Date().getDate() % DAILY_TIPS.length;
+
+  // Computing this from `new Date()` directly during render caused a
+  // React hydration mismatch in production: Vercel can statically
+  // pre-render this page at build time, so the server-rendered HTML's
+  // date and the client's live date can disagree (even just by crossing
+  // midnight), producing "today's date changed" hydration errors.
+  // Fix: render a fixed value on both the server and the first client
+  // pass (index 0), then update it client-side only after mount.
+  const [tipIndex, setTipIndex] = useState(0);
+  useEffect(() => {
+    setTipIndex(new Date().getDate() % DAILY_TIPS.length);
+  }, []);
 
   return (
     <div>
@@ -78,4 +90,3 @@ export default function HomePage() {
       </div>
     </div>
   );
-}
