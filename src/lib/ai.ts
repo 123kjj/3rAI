@@ -92,36 +92,7 @@ export async function realAnalyzeItem(
     throw new Error("GEMINI_API_KEY is not configured");
   }
 
-  return withRetry(() => callGemini(apiKey, imageBase64, mediaType, locationHint));
-}
-
-/**
- * Retries a Gemini call a couple of times on a transient 503 ("model
- * overloaded, try again") before giving up. Google's own error message
- * for this case literally says "Spikes in demand are usually temporary" —
- * so a short automatic retry avoids surfacing a scary error to the person
- * for something that resolves itself a second later.
- */
-async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
-  let lastErr: unknown;
-  for (let i = 0; i < attempts; i++) {
-    try {
-      return await fn();
-    } catch (err) {
-      lastErr = err;
-      const isOverloaded =
-        err instanceof Error && /\b503\b/.test(err.message);
-      if (!isOverloaded || i === attempts - 1) throw err;
-      const delayMs = 500 * Math.pow(2, i); // 500ms, 1000ms
-      console.warn(
-        `[realAnalyzeItem] Gemini 503 (overloaded), retrying in ${delayMs}ms (attempt ${
-          i + 1
-        }/${attempts})`
-      );
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-    }
-  }
-  throw lastErr;
+  return callGemini(apiKey, imageBase64, mediaType, locationHint);
 }
 
 async function callGemini(
