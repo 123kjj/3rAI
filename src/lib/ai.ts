@@ -191,7 +191,7 @@ ${locationHint ? `The user's general location is: ${locationHint}.` : "No locati
           // Lower temperature = less "creative"/random guessing, more
           // grounded in what's actually visible in the photo.
           temperature: 0.15,
-          maxOutputTokens: 1024,
+          maxOutputTokens: 2048,
         },
       }),
     }
